@@ -5,10 +5,11 @@ namespace App\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use function Symfony\Component\String\u;
 
 class VinylController extends AbstractController
 {
-  #[Route('/')]
+  #[Route('/', name: 'app_homepage')]
   public function homepage(){
 
     $tracks = [
@@ -26,8 +27,13 @@ class VinylController extends AbstractController
     ]);
   }
 
-  #[Route('/browse/{categories}')]
+  #[Route('/browse/{categories}', name: 'app_browse')]
   public function browse($categories = null) : Response {
-    return new Response('Genre: '. $categories);
+
+    $genre = $categories ? u(str_replace('-', '', $categories))->title(true) : null;
+
+    return $this->render('vinyl/browse.html.twig', [
+      'genre' => $genre
+    ]);
   }
 }
