@@ -2,18 +2,17 @@
 
 namespace App\Controller;
 
-use Psr\Cache\CacheItemInterface;
-use Symfony\Contracts\Cache\CacheInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Repository\MixRepository;
 use function Symfony\Component\String\u;
 
 class VinylController extends AbstractController
 {
   #[Route('/', name: 'app_homepage')]
-  public function homepage(){
+  public function homepage()
+  {
 
     $tracks = [
       ['song' => 'Gangsta\'s Paradise', 'artist' => 'Coolio'],
@@ -31,15 +30,11 @@ class VinylController extends AbstractController
   }
 
   #[Route('/browse/{categories}', name: 'app_browse')]
-  public function browse(HttpClientInterface $httpClient, CacheInterface $cache, $categories = null) : Response {
+  public function browse(MixRepository $mixRepository, $categories = null): Response
+  {
 
     $genre = $categories ? u(str_replace('-', '', $categories))->title(true) : null;
-    $mixes = $cache->get('mixes_data', function(CacheItemInterface $cacheItem) use ($httpClient) {
-      $cacheItem->expiresAfter(5);
-      $response = $httpClient->request('GET', 'https://raw.githubusercontent.com/SymfonyCasts/vinyl-mixes/main/mixes.json');
-
-      return $response->toArray();
-    });
+    $mixes = $mixRepository->findAll();
 
     return $this->render('vinyl/browse.html.twig', [
       'genre' => $genre,
